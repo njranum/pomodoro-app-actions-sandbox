@@ -1,0 +1,21 @@
+version: 2
+updates:
+  # npm dependencies
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7          # don't propose a release until it is 7 days old (supply-chain buffer)
+    groups:
+      npm-patches:
+        update-types: ["patch"] # bundle all patch bumps into a single PR
+
+  # keep the workflow actions themselves fresh (checkout, setup-node, gh-release, etc.)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    cooldown:
+      default-days: 7

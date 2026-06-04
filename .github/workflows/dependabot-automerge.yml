@@ -1,0 +1,40 @@
+name: Dependabot
+
+on: pull_request
+
+permissions:
+  contents: write        # needed to merge the PR
+  pull-requests: write   # needed to enable auto-merge
+
+jobs:
+  dependabot:
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+    steps:
+      - name: Fetch Dependabot metadata
+        id: meta
+        uses: dependabot/fetch-metadata@v2
+
+      - name: Notify Discord (PR opened)
+        if: github.event.action == 'opened'
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          UPDATE_TYPE: ${{ steps.meta.outputs.update-type }}
+        run: |
+          if [ "$UPDATE_TYPE" = "version-update:semver-patch" ]; then
+            STATUS="patch — will auto-merge once CI passes"
+          else
+            STATUS="${UPDATE_TYPE#version-update:semver-} — needs manual review"
+          fi
+          curl -fsS -X POST "$DISCORD_WEBHOOK" \
+            -H "Content-Type: application/json" \
+            -d "{\"content\": \"Dependabot opened a PR: **${PR_TITLE}**\n${STATUS}\n${PR_URL}\"}"
+
+      - name: Enable auto-merge (patch only)
+        if: steps.meta.outputs.update-type == 'version-update:semver-patch'
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr merge --auto --squash "$PR_URL"
