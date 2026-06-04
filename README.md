@@ -1,34 +1,46 @@
 # actions-sandbox
 
-An Electron application with React and TypeScript
+An electron-vite sandbox set up for me to test github actions
 
-## Recommended IDE Setup
+## 1. Integration Checks
+Github action that automatically to run ESLint, TypeScript compiler, and run unit tests on ubuntu-latest
 
-- [VSCode](https://code.visualstudio.com/) + [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) + [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
+### Trigger
+On the creation of pull requests to the main branch.
+When the branch is updated, or merged into main branch.
 
-## Project Setup
+### Actions
+1. Run ESLint against the project
+2. Compile the project
+3. Run project unit tests
 
-### Install
+### Features
+Auto cancel concurrent runs
+Prevent successive pull requests from triggering the same workflow to run multiple times.
+Cancel any in-process actions and run on only the most recent merge request
+```concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true```
 
-```bash
-$ npm install
-```
+Path Filtering
+We don't want to trigger the workflow on non critical changes to the repository, e.g., updating the README or GitIgnore.
+```on:
+  # 1. Triggers when you click "Merge" on a PR
+  push:
+    branches: [ "main" ]
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+      - 'LICENSE'
+      - '.vscode/**'
+      - 'assets/**/*.png'
 
-### Development
-
-```bash
-$ npm run dev
-```
-
-### Build
-
-```bash
-# For windows
-$ npm run build:win
-
-# For macOS
-$ npm run build:mac
-
-# For Linux
-$ npm run build:linux
-```
+  # 2. Triggers when you open or update a Pull Request against main
+  pull_request:
+    branches: [ "main" ]
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+      - 'LICENSE'
+      - '.vscode/**'
+      - 'assets/**/*.png'```
