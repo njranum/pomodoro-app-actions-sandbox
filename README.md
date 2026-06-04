@@ -17,7 +17,7 @@ Automated CI pipeline running on `ubuntu-latest` runner to validate code quality
 ### Optimisation Features
 #### Concurrency Control
 Prevent successive pull requests from triggering the same workflow to run multiple times.
-Cancel any in-process actions and run on only the most recent pull request
+Cancel any in-process workflows if a newer commit is pushed to the same PR.
 ```concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -45,4 +45,14 @@ We don't want to trigger the workflow on non critical changes to the repository,
       - 'LICENSE'
       - '.vscode/**'
       - 'assets/**/*.png'
+```
+
+#### Dependency Caching
+Pipeline uses the hash of package-lock.json to detect when new dependencies have been added.
+This allows the action to download the dependencies directly from GitHub servers saving time and money if the dependencies remain unchanged between clean installs
+```- name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm' # Automates the node_modules caching optimization we discussed
 ```
