@@ -3,6 +3,10 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
+const user = { name: 'Alex' }
+// Try to log a property that was never defined
+console.log(user.phoneNumber.toUpperCase())
+
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
