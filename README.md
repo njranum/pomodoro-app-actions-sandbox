@@ -2,8 +2,8 @@
 
 An electron-vite sandbox set up for me to test github actions
 
-## 1. Integration Checks
-Automated CI pipeline running on `ubuntu-latest` runner to validate code quality, type safety, and test suites before code integration.
+## 1. Pre-Merge Validations
+sAutomated CI pipeline running on `ubuntu-latest` runner to validate code quality, type safety, and test suites before code integration.
 
 ### Triggers
 **Pull Requests:** Automatically executes when a PR is opened or updated against the 'main' branch.
