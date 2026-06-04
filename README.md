@@ -3,26 +3,27 @@
 An electron-vite sandbox set up for me to test github actions
 
 ## 1. Integration Checks
-Github action that automatically to run ESLint, TypeScript compiler, and run unit tests on ubuntu-latest
+Automated CI pipeline running on `ubuntu-latest` runner to validate code quality, type safety, and test suites before code integration.
 
-### Trigger
-On the creation of pull requests to the main branch.
-When the branch is updated, or merged into main branch.
+### Triggers
+**Pull Requests:** Automatically executes when a PR is opened or updated against the 'main' branch.
+**Main Branch Merges:** Executes a final evaluation when code is successfully pushed/merged into 'main' branch.
 
-### Actions
-1. Run ESLint against the project
-2. Compile the project
-3. Run project unit tests
+### Pipeline Steps
+1. **Linter:** Runs ESLint against the project codebase to enforce style
+2. **TypeScript Type-Checking:** Compile the project code via `tsc --noEmit` to verify type safety
+3. **Unit Testin:** Executes the project's test suite using Vitest
 
-### Features
-Auto cancel concurrent runs
+### Optimisation Features
+#### Concurrency Control
 Prevent successive pull requests from triggering the same workflow to run multiple times.
-Cancel any in-process actions and run on only the most recent merge request
+Cancel any in-process actions and run on only the most recent pull request
 ```concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true```
+  cancel-in-progress: true
+```
 
-Path Filtering
+#### Path Filtering
 We don't want to trigger the workflow on non critical changes to the repository, e.g., updating the README or GitIgnore.
 ```on:
   # 1. Triggers when you click "Merge" on a PR
@@ -43,4 +44,5 @@ We don't want to trigger the workflow on non critical changes to the repository,
       - '.gitignore'
       - 'LICENSE'
       - '.vscode/**'
-      - 'assets/**/*.png'```
+      - 'assets/**/*.png'
+```
