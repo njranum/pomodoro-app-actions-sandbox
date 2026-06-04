@@ -56,3 +56,7 @@ This allows the action to download the dependencies directly from GitHub servers
           node-version: '20'
           cache: 'npm' # Automates the node_modules caching optimization we discussed
 ```
+
+#### Required-Check Stub Workflow
+Path filtering creates a problem if the workflow is market as a *required* check on the PR. If a doc-only PR is made it the original workflow will be skipped, and so the PR will be blocked.
+`ci-skip.yml` solves this by running on PRs which contain files only in the inverse of the original workflow's `paths-ignore`. It immediately succeeds when triggered.
