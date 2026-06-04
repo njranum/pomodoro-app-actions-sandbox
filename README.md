@@ -1,34 +1,58 @@
 # actions-sandbox
 
-An Electron application with React and TypeScript
+An electron-vite sandbox set up for me to test github actions
 
-## Recommended IDE Setup
+## 1. Integration Checks
+Automated CI pipeline running on `ubuntu-latest` runner to validate code quality, type safety, and test suites before code integration.
 
-- [VSCode](https://code.visualstudio.com/) + [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) + [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
+### Triggers
+**Pull Requests:** Automatically executes when a PR is opened or updated against the 'main' branch.
+**Main Branch Merges:** Executes a final evaluation when code is successfully pushed/merged into 'main' branch.
 
-## Project Setup
+### Pipeline Steps
+1. **Linter:** Runs ESLint against the project codebase to enforce style
+2. **TypeScript Type-Checking:** Compile the project code via `tsc --noEmit` to verify type safety
+3. **Unit Testin:** Executes the project's test suite using Vitest
 
-### Install
-
-```bash
-$ npm install
+### Optimisation Features
+#### Concurrency Control
+Prevent successive pull requests from triggering the same workflow to run multiple times.
+Cancel any in-process workflows if a newer commit is pushed to the same PR.
+```concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 ```
 
-### Development
+#### Path Filtering
+We don't want to trigger the workflow on non critical changes to the repository, e.g., updating the README or GitIgnore.
+```on:
+  # 1. Triggers when you click "Merge" on a PR
+  push:
+    branches: [ "main" ]
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+      - 'LICENSE'
+      - '.vscode/**'
+      - 'assets/**/*.png'
 
-```bash
-$ npm run dev
+  # 2. Triggers when you open or update a Pull Request against main
+  pull_request:
+    branches: [ "main" ]
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+      - 'LICENSE'
+      - '.vscode/**'
+      - 'assets/**/*.png'
 ```
 
-### Build
-
-```bash
-# For windows
-$ npm run build:win
-
-# For macOS
-$ npm run build:mac
-
-# For Linux
-$ npm run build:linux
+#### Dependency Caching
+Pipeline uses the hash of package-lock.json to detect when new dependencies have been added.
+This allows the action to download the dependencies directly from GitHub servers saving time and money if the dependencies remain unchanged between clean installs
+```- name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm' # Automates the node_modules caching optimization we discussed
 ```
