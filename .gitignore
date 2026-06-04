@@ -1,0 +1,42 @@
+node_modules
+dist
+out
+.DS_Store
+.eslintcache
+*.log*
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Dependencies
+node_modules/
+
+# Electron-Vite compilation outputs
+# (Vite development builds usually go here)
+out/
+dist/
+release/
+
+# IDEs and editors
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+.DS_Store
+Thumbs.db
+
+# Environment variables (Crucial if you add API keys later)
+.env
+.env.local
+.env.*.local
+
+# TypeScript cache
+*.tsbuildinfo
