@@ -2,12 +2,20 @@
 
 An electron-vite sandbox set up for me to test github actions
 
+## Workflows
+
+1. [Pre-Merge Validation](#1-pre-merge-validations)
+2. [Release Pipeline](#2-release-pipeline)
+3. [Dependabot Automation](#3-dependabot-auto-merge--discord-notifications)
+
+---
+
 ## 1. Pre-Merge Validations
 Automated CI pipeline running on `ubuntu-latest` runner to validate code quality, type safety, and test suites before code integration.
 
 ### Triggers
-**Pull Requests:** Automatically executes when a PR is opened or updated against the 'main' branch.
-**Main Branch Merges:** Executes a final evaluation when code is successfully pushed/merged into 'main' branch.
+- **Pull Requests:** Automatically executes when a PR is opened or updated against the 'main' branch.
+- **Main Branch Merges:** Executes a final evaluation when code is successfully pushed/merged into 'main' branch.
 
 ### Pipeline Steps
 1. **Linter:** Runs ESLint against the project codebase to enforce style
@@ -18,48 +26,19 @@ Automated CI pipeline running on `ubuntu-latest` runner to validate code quality
 #### Concurrency Control
 Prevent successive pull requests from triggering the same workflow to run multiple times.
 Cancel any in-process workflows if a newer commit is pushed to the same PR.
-```concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-```
 
 #### Path Filtering
 We don't want to trigger the workflow on non critical changes to the repository, e.g., updating the README or GitIgnore.
-```on:
-  # 1. Triggers when you click "Merge" on a PR
-  push:
-    branches: [ "main" ]
-    paths-ignore:
-      - '**.md'
-      - '.gitignore'
-      - 'LICENSE'
-      - '.vscode/**'
-      - 'assets/**/*.png'
-
-  # 2. Triggers when you open or update a Pull Request against main
-  pull_request:
-    branches: [ "main" ]
-    paths-ignore:
-      - '**.md'
-      - '.gitignore'
-      - 'LICENSE'
-      - '.vscode/**'
-      - 'assets/**/*.png'
-```
 
 #### Dependency Caching
 Pipeline uses the hash of package-lock.json to detect when new dependencies have been added.
 This allows the action to download the dependencies directly from GitHub servers saving time and money if the dependencies remain unchanged between clean installs
-```- name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm' # Automates the node_modules caching optimization we discussed
-```
 
 #### Required-Check Stub Workflow
 Path filtering creates a problem if the workflow is market as a *required* check on the PR. If a doc-only PR is made it the original workflow will be skipped, and so the PR will be blocked.
 `ci-skip.yml` solves this by running on PRs which contain files only in the inverse of the original workflow's `paths-ignore`. It immediately succeeds when triggered.
+
+---
 
 ## 2. Release Pipeline
 Automated release pipeline running on `macOS-latest` which generates a `.dmg` file for Apple Silicon + Intel CPU architectures.
@@ -82,12 +61,14 @@ GitHub Actions environment variables are injected into the build so the app show
 #### Release Notes Generation
 Release notes are generated automatically from the commits and PRs since the last tag.
 
+---
+
 ## 3. Dependabot (Auto-merge + Discord Notifications)
 Keep dependencies fresh and the app secure automatically via Dependabot. Configured to open weekly PRs, patch updates auto-merge once CI passes (Pre-Merge Validation). Discord pings to alert on Dependabot PRs.
 
 ### Triggers
-**Scheduled:** Dependabot checks for npm and github-actions updates on a weekly schedule.
-**Dependabot PRs:** The auto-merge workflow runs whenever Dependabot opens a Pull Request against 'main'.
+- **Scheduled:** Dependabot checks for npm and github-actions updates on a weekly schedule.
+- **Dependabot PRs:** The auto-merge workflow runs whenever Dependabot opens a Pull Request against 'main'.
 
 ### Pipeline Steps
 1. **Metadata:** Uses `dependabot/fetch-metadata` to read the update type (patch/minor/major).
