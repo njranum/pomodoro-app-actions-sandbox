@@ -3,7 +3,7 @@
 An electron-vite sandbox set up for me to test github actions
 
 ## 1. Pre-Merge Validations
-sAutomated CI pipeline running on `ubuntu-latest` runner to validate code quality, type safety, and test suites before code integration.
+Automated CI pipeline running on `ubuntu-latest` runner to validate code quality, type safety, and test suites before code integration.
 
 ### Triggers
 **Pull Requests:** Automatically executes when a PR is opened or updated against the 'main' branch.
@@ -60,3 +60,24 @@ This allows the action to download the dependencies directly from GitHub servers
 #### Required-Check Stub Workflow
 Path filtering creates a problem if the workflow is market as a *required* check on the PR. If a doc-only PR is made it the original workflow will be skipped, and so the PR will be blocked.
 `ci-skip.yml` solves this by running on PRs which contain files only in the inverse of the original workflow's `paths-ignore`. It immediately succeeds when triggered.
+
+## 2. Release Pipeline
+Automated release pipeline running on `macOS-latest` which generates a `.dmg` file for Apple Silicon + Intel CPU architectures.
+
+### Triggers
+Triggered when a new release version is made, done by tagging a commit with a version number in the format `v*.*.*`.
+
+### Pipeline Steps
+1. **Install Dependencies:** Runs `npm ci` for a clean install from `package-lock.json`
+2. **Build:** Compiles the project and mackages a universal `.dmg` via electron-builder using `npm run build:mac`
+3. **Release:** Uses `softprops/action-gh-release` to create the GitHub Release and attach the `.dmg`
+
+### Features
+#### Code Signing
+I do not have a paid Apple developer account, so the release is ad-hoc signed once installed - this is required for notifications to work but it won't pass Gatekeeper so users will need to strip the quarantine flag once installed.
+
+#### Build Metadata Injection
+GitHub Actions environment variables are injected into the build so the app shows exactly which build it is running.
+
+#### Release Notes Generation
+Release notes are generated automatically from the commits and PRs since the last tag.
