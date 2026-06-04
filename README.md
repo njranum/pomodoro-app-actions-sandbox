@@ -81,3 +81,28 @@ GitHub Actions environment variables are injected into the build so the app show
 
 #### Release Notes Generation
 Release notes are generated automatically from the commits and PRs since the last tag.
+
+## 3. Dependabot (Auto-merge + Discord Notifications)
+Keep dependencies fresh and the app secure automatically via Dependabot. Configured to open weekly PRs, patch updates auto-merge once CI passes (Pre-Merge Validation). Discord pings to alert on Dependabot PRs.
+
+### Triggers
+**Scheduled:** Dependabot checks for npm and github-actions updates on a weekly schedule.
+**Dependabot PRs:** The auto-merge workflow runs whenever Dependabot opens a Pull Request against 'main'.
+
+### Pipeline Steps
+1. **Metadata:** Uses `dependabot/fetch-metadata` to read the update type (patch/minor/major).
+2. **Notify:** Fires a Discord webhook when the PR is first opened.
+3. **Auto-merge:** Enables auto-merge on patch updates so they merge themselves once Pre-Merge Validation passes.
+
+### Features
+#### Cooldown
+Introduce a cooldown buffer so a dependency isn't pulled in the moment it's published. Updates wait 7 days after release before Dependabot proposes them, giving the wider community time to flag a bad or compromised version.
+
+#### Patch-only Auto-merge
+Only patch updates merge automatically, and only after Pre-Merge Validation passes (enforced by branch protection on 'main'). Minor and major updates still open as PRs but are left for me to review manually.
+
+#### Action Updates
+Dependabot also tracks the workflow actions themselves (`checkout`, `setup-node` etc.), keeping them patched and avoiding stale/unpinned actions.
+
+#### Discord Notifications
+A webhook fires a message to a private Discord server when Dependabot opens a PR. The message includes info on whether the PR will auto-merge or requires manual review.
